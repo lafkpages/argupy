@@ -1,6 +1,7 @@
 import sys
 
 BOOL  = 'boolean'
+INT   = 'integer'
 FLOAT = 'float'
 STR   = 'string'
 
@@ -33,20 +34,25 @@ class Args:
   def _setarg(self, arg):
     self.args[arg.name] = arg
 
-  def setarg(self, arg, type_:any=BOOL, default_value=None) -> Arg:
+  def setarg(self, arg, type_=BOOL, default_value=None, short:str=None) -> Arg:
     if isinstance(arg, Arg):
       return self.setarg(arg.name, arg.type, arg.defv)
 
     if not type_ in [BOOL, FLOAT, STR]:
       if type(type_) == type(''):
         type_ = STR
-      elif type(type_) in [type(0), type(0.2)]:
+      elif type(type_) == type(0):
+        type_ = INT
+      elif type(type_) in [type(0.2)]:
         type_ = FLOAT
       elif type(type_) == type(True):
         type_ = BOOL
     
     arg_ = Arg(arg, type_, default_value)
     self._setarg(arg_)
+
+    if short != None:
+      self.setlink(short, arg)
 
     return arg_
   
@@ -98,6 +104,11 @@ class Args:
 
       if arg_.type == BOOL:
         return True if exists else False
+      elif arg_.type == INT:
+        if has_value:
+          return int(value) if exists else int(arg_.defv)
+        else:
+          return arg_.defv
       elif arg_.type == FLOAT:
         if has_value:
           return float(value) if exists else float(arg_.defv)
